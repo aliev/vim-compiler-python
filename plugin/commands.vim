@@ -8,5 +8,5 @@ function! DjangoRun(bang, args)
   let &makeprg = l:_makeprg
 endfunction
 
-command! -bang -nargs=* -complete=customlist,python#django#compl#managmentcommands Django
+command! -bang -nargs=* -complete=customlist,python#django#complete#managmentcommands Django
       \ call DjangoRun(<bang>0, <q-args>)

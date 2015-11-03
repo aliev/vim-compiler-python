@@ -1,4 +1,4 @@
-function! python#django#compl#managmentcommands(prefix, line, ...)
+function! python#django#complete#managmentcommands(prefix, line, ...)
 python << EOF
 from django.core import management
 from django.conf import settings
