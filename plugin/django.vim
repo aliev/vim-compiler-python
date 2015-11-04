@@ -7,3 +7,6 @@ if !exists('$DJANGO_SETTINGS_MODULE')
     let $DJANGO_SETTINGS_MODULE=s:django_settings_module
   endif
 endif
+
+command! -bang -nargs=* -complete=customlist,python#django#complete_managment_commands Django
+      \ call python#django#admin_command(<bang>0, <q-args>)
