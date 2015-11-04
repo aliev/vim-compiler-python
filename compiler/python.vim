@@ -17,6 +17,14 @@ if !exists('g:python_sign_error_symbol')
   let g:python_sign_error_symbol="⚠"
 endif
 
+if !exists('$PYTHONWARNINGS')
+  let $PYTHONWARNINGS="ignore"
+endif
+
+if !exists('$PYTHONPATH')
+  let $PYTHONPATH=$PWD
+endif
+
 au CursorMoved * call s:GetPythonMessage()
 au QuickFixCmdPost * call s:FixQflist()
 au QuickFixCmdPost * call s:PlaceSigns()
