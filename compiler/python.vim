@@ -25,9 +25,12 @@ if !exists('$PYTHONPATH')
   let $PYTHONPATH=$PWD
 endif
 
-au CursorMoved * call s:GetPythonMessage()
-au QuickFixCmdPost * call s:FixQflist()
-au QuickFixCmdPost * call s:PlaceSigns()
+augroup python
+  au!
+  au CursorMoved * call s:SetPythonErrorMessage()
+  au QuickFixCmdPost * call s:FixQflist()
+  au BufEnter * call s:SetPythonError()
+augroup end
 
 " Python errors are multi-lined. They often start with 'Traceback', so
 " we want to capture that (with +G) and show it in the quickfix window
@@ -68,41 +71,53 @@ else
   CompilerSet makeprg=python
 endif
 
-function! s:PlaceSigns()
+function! s:SetPythonError()
   " Define signs
-  execute "sign define PythonError text=" . g:python_sign_error_symbol . " texthl=SignColumn"
   highlight link PythonError SpellBad
 
   let l:qflist = getqflist()
   let l:matches = getmatches()
-
-  let l:index0 = 100
-  let l:index  = l:index0
+  let b:matchedlines = {}
 
   " Clear matches
   for l:matchid in l:matches
     call matchdelete(l:matchid['id'])
   endfor
 
-  " Clear signs
-  if exists('s:signids')
-    for l:signid in s:signids
-      execute ":sign unplace ".l:signid
-    endfor
-  endif
+  for l:item in l:qflist
+    let l:bufnr = l:item['bufnr']
+    let l:lnum = l:item['lnum']
 
-  let s:signids  = []
+    let l:matchDict = {}
+    let l:matchDict['linenum'] = l:item.lnum
+    let l:matchDict['message'] = l:item.text
 
-  for tb in l:qflist
-    let bufnr = tb['bufnr']
-    let lnum = tb['lnum']
-    if bufnr == 0
+    if l:bufnr == 0
       continue
     endif
-    execute "sign place" index "line=" . lnum "name=PythonError buffer=" . bufnr
-    call matchadd("PythonError", '\w\%' . lnum . 'l\n\@!')
-    let s:signids += [l:index]
-    let l:index += 1
+    if bufnr('%') == item.bufnr
+      if !has_key(b:matchedlines, l:item.lnum)
+        let b:matchedlines[l:item.lnum] = l:matchDict
+        call matchadd("PythonError", '\w\%' . l:item.lnum . 'l\n\@!')
+      endif
+    endif
+  endfor
+endfunction
+
+function! s:SetPythonErrorMessage()
+  let l:qflist = getqflist()
+  let l:line = line('.')
+  for l:item in l:qflist
+    if l:line == l:item['lnum']
+      if !empty(l:item['text'])
+        if bufnr('%') == l:item['bufnr']
+          let g:error = printf("Error: %s", l:item['text'])
+          call WideMsg(g:error)
+        endif
+      endif
+    else
+      echo
+    endif
   endfor
 endfunction
 
@@ -121,21 +136,6 @@ function! s:FixQflist() " {{{
     call setqflist(l:traceback)
   endif
 endfunction " }}}
-
-function! s:GetPythonMessage()
-  let l:qflist = getqflist()
-  let l:line = line('.')
-  for qfix in l:qflist
-    if l:line == qfix['lnum']
-      if !empty(qfix['text'])
-        let g:error = printf("Error: %s", qfix['text'])
-        call WideMsg(g:error)
-      endif
-    else
-      echo
-    endif
-  endfor
-endfunction
 
 function! Redraw(full) abort " {{{
     if a:full
