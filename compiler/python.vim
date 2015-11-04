@@ -6,6 +6,7 @@
 if exists("current_compiler")
   finish
 endif
+
 let current_compiler = "python"
 
 if exists(":CompilerSet") != 2		" older Vim always used :setlocal
@@ -20,21 +21,60 @@ au CursorMoved * call s:GetPythonMessage()
 au QuickFixCmdPost * call s:FixQflist()
 au QuickFixCmdPost * call s:PlaceSigns()
 
-CompilerSet efm=%+GTraceback%.%#,%E\ \ File\ \"%f\"\\,\ line\ %l\\,%m%\\C,%E\ \ File\ \"%f\"\\,\ line\ %l%\\C,%C%p^,%+C\ \ \ \ %.%#,%+C\ \ %.%#,%Z%\\S%\\&%m,%-G%.%#
-CompilerSet makeprg=python\ -i
+" Python errors are multi-lined. They often start with 'Traceback', so
+" we want to capture that (with +G) and show it in the quickfix window
+" because it explains the order of error messages.
+CompilerSet efm  =%+GTraceback%.%#,
+
+" The error message itself starts with a line with 'File' in it. There
+" are a couple of variations, and we need to process a line beginning
+" with whitespace followed by File, the filename in "", a line number,
+" and optional further text. %E here indicates the start of a multi-line
+" error message. The %\C at the end means that a case-sensitive search is
+" required.
+CompilerSet efm +=%E\ \ File\ \"%f\"\\,\ line\ %l\\,%m%\\C,
+CompilerSet efm +=%E\ \ File\ \"%f\"\\,\ line\ %l%\\C,
+
+" The possible continutation lines are idenitifed to Vim by %C. We deal
+" with these in order of most to least specific to ensure a proper
+" match. A pointer (^) identifies the column in which the error occurs
+" (but will not be entirely accurate due to indention of Python code).
+CompilerSet efm +=%C%p^,
+
+" Any text, indented by more than two spaces contain useful information.
+" We want this to appear in the quickfix window, hence %+.
+CompilerSet efm +=%+C\ \ \ \ %.%#,
+CompilerSet efm +=%+C\ \ %.%#,
+
+" The last line (%Z) does not begin with any whitespace. We use a zero
+" width lookahead (\&) to check this. The line contains the error
+" message itself (%m)
+CompilerSet efm +=%Z%\\S%\\&%m,
+
+" We can ignore any other lines (%-G)
+CompilerSet efm +=%-G%.%#
+
+if filereadable("Makefile")
+  CompilerSet makeprg=make
+else
+  CompilerSet makeprg=python
+endif
 
 function! s:PlaceSigns()
   execute "sign define PythonDispatchError text=" . g:python_sign_error_symbol . " texthl=SignColumn"
-  let qflist = getqflist()
+  let l:qflist = getqflist()
   let l:index0 = 100
   let l:index  = l:index0
-  let s:signids  = []
 
-  if !empty(s:signids)
-    call s:UnplaceSigns()
+  if exists('s:signids')
+    for i in s:signids
+      execute ":sign unplace ".i
+    endfor
   endif
 
-  for tb in qflist
+  let s:signids  = []
+
+  for tb in l:qflist
     let bufnr = tb['bufnr']
     let lnum = tb['lnum']
     if bufnr == 0
@@ -46,19 +86,13 @@ function! s:PlaceSigns()
   endfor
 endfunction
 
-function! s:UnplaceSigns()
-  if exists('s:signids')
-    for i in s:signids
-      execute ":sign unplace ".i
-    endfor
-    unlet s:signids
-  endif
-endfunction
-
-function! s:FixQflist()
+" Sometimes it is too much unnecessary information
+" which is not related to the context of the errors.
+" This function filter clean stacktrack
+function! s:FixQflist() " {{{
   let l:traceback = []
-  let qflist = getqflist()
-  for i in qflist
+  let l:qflist = getqflist()
+  for i in l:qflist
     if !empty(i['type'])
       call add(l:traceback, i)
     endif
@@ -66,13 +100,13 @@ function! s:FixQflist()
   if !empty(l:traceback)
     call setqflist(l:traceback)
   endif
-endfunction
+endfunction " }}}
 
 function! s:GetPythonMessage()
-  let qflist = getqflist()
-  let line = line('.')
-  for qfix in qflist
-    if line == qfix['lnum']
+  let l:qflist = getqflist()
+  let l:line = line('.')
+  for qfix in l:qflist
+    if l:line == qfix['lnum']
       if !empty(qfix['text'])
         let g:error = printf("Error: %s", qfix['text'])
         call WideMsg(g:error)
@@ -83,16 +117,16 @@ function! s:GetPythonMessage()
   endfor
 endfunction
 
-function! Redraw(full) abort " {{{2
+function! Redraw(full) abort " {{{
     if a:full
         redraw!
     else
         redraw
     endif
-endfunction " }}}2
+endfunction " }}}
 
-" Print as much of a:msg as possible without "Press Enter" prompt appearing
-function! WideMsg(msg) abort " {{{2
+" Print as much of a:msg as possible without "Press Enter" prompt appearing {{{
+function! WideMsg(msg) abort 
     let old_ruler = &ruler
     let old_showcmd = &showcmd
 
@@ -113,5 +147,7 @@ function! WideMsg(msg) abort " {{{2
 
     let &ruler = old_ruler
     let &showcmd = old_showcmd
-endfunction " }}}2
+endfunction
+" }}}
 
+" vim:foldmethod=marker:foldlevel=0

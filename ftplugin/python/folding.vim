@@ -1,3 +1,8 @@
+" Vim compiler file
+" Compiler:	Unit testing tool for Python
+" Maintainer:	Ali Aliev <ali@aliev.me>
+" Last Change: 2015 Nov 2
+
 " I do not like code folding,
 " but sometimes too long lists of imports
 " at the beginning of the file is very annoying.
