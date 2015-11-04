@@ -69,14 +69,25 @@ else
 endif
 
 function! s:PlaceSigns()
-  execute "sign define PythonDispatchError text=" . g:python_sign_error_symbol . " texthl=SignColumn"
+  " Define signs
+  execute "sign define PythonError text=" . g:python_sign_error_symbol . " texthl=SignColumn"
+  highlight link PythonError SpellBad
+
   let l:qflist = getqflist()
+  let l:matches = getmatches()
+
   let l:index0 = 100
   let l:index  = l:index0
 
+  " Clear matches
+  for l:matchid in l:matches
+    call matchdelete(l:matchid['id'])
+  endfor
+
+  " Clear signs
   if exists('s:signids')
-    for i in s:signids
-      execute ":sign unplace ".i
+    for l:signid in s:signids
+      execute ":sign unplace ".l:signid
     endfor
   endif
 
@@ -88,7 +99,8 @@ function! s:PlaceSigns()
     if bufnr == 0
       continue
     endif
-    execute "sign place" index "line=" . lnum "name=PythonDispatchError buffer=" . bufnr
+    execute "sign place" index "line=" . lnum "name=PythonError buffer=" . bufnr
+    call matchadd("PythonError", '\w\%' . lnum . 'l\n\@!')
     let s:signids += [l:index]
     let l:index += 1
   endfor
