@@ -29,7 +29,7 @@ augroup python
   au!
   au CursorMoved * call s:SetPythonErrorMessage()
   au QuickFixCmdPost * call s:FixQflist()
-  au BufEnter * call s:SetPythonError()
+  au BufEnter * call s:HighlightPythonError()
 augroup end
 
 " Python errors are multi-lined. They often start with 'Traceback', so
@@ -71,7 +71,7 @@ else
   CompilerSet makeprg=python
 endif
 
-function! s:SetPythonError()
+function! s:HighlightPythonError()
   " Define signs
   highlight link PythonError SpellBad
 
@@ -79,22 +79,16 @@ function! s:SetPythonError()
   let l:matches = getmatches()
   let b:matchedlines = {}
 
-  " Clear matches
-  for l:matchid in l:matches
-    call matchdelete(l:matchid['id'])
+  "clear all already highlighted
+  for l:matchId in l:matches
+    call matchdelete(l:matchId['id'])
   endfor
 
   for l:item in l:qflist
-    let l:bufnr = l:item['bufnr']
-    let l:lnum = l:item['lnum']
-
     let l:matchDict = {}
     let l:matchDict['linenum'] = l:item.lnum
     let l:matchDict['message'] = l:item.text
 
-    if l:bufnr == 0
-      continue
-    endif
     if bufnr('%') == item.bufnr
       if !has_key(b:matchedlines, l:item.lnum)
         let b:matchedlines[l:item.lnum] = l:matchDict
