@@ -13,10 +13,6 @@ if exists(":CompilerSet") != 2		" older Vim always used :setlocal
   command -nargs=* CompilerSet setlocal <args>
 endif
 
-if !exists('g:python_sign_error_symbol')
-  let g:python_sign_error_symbol="⚠"
-endif
-
 if !exists('$PYTHONWARNINGS')
   let $PYTHONWARNINGS="ignore"
 endif
@@ -29,13 +25,22 @@ augroup python
   au!
   au CursorMoved * call s:SetPythonErrorMessage()
   au QuickFixCmdPost * call s:FixQflist()
+
   au BufEnter * call s:HighlightPythonError()
+  au QuickFixCmdPost * call s:HighlightPythonError()
 augroup end
+
+" For Flake8 first
+CompilerSet efm  =%E%f:%l:\ could\ not\ compile,
+CompilerSet efm +=%-Z%p^,
+CompilerSet efm +=%A%f:%l:%c:\ %t%n\ %m,
+CompilerSet efm +=%A%f:%l:\ %t%n\ %m,
 
 " Python errors are multi-lined. They often start with 'Traceback', so
 " we want to capture that (with +G) and show it in the quickfix window
 " because it explains the order of error messages.
-CompilerSet efm  =%+GTraceback%.%#,
+
+CompilerSet efm +=%+GTraceback%.%#,
 
 " The error message itself starts with a line with 'File' in it. There
 " are a couple of variations, and we need to process a line beginning
@@ -72,12 +77,10 @@ else
 endif
 
 function! s:HighlightPythonError()
-  " Define signs
   highlight link PythonError SpellBad
 
   let l:qflist = getqflist()
   let l:matches = getmatches()
-  let b:matchedlines = {}
 
   "clear all already highlighted
   for l:matchId in l:matches
@@ -85,15 +88,8 @@ function! s:HighlightPythonError()
   endfor
 
   for l:item in l:qflist
-    let l:matchDict = {}
-    let l:matchDict['linenum'] = l:item.lnum
-    let l:matchDict['message'] = l:item.text
-
     if bufnr('%') == item.bufnr
-      if !has_key(b:matchedlines, l:item.lnum)
-        let b:matchedlines[l:item.lnum] = l:matchDict
-        call matchadd("PythonError", '\w\%' . l:item.lnum . 'l\n\@!')
-      endif
+      call matchadd("PythonError", '\w\%' . l:item.lnum . 'l\n\@!')
     endif
   endfor
 endfunction
@@ -102,11 +98,10 @@ function! s:SetPythonErrorMessage()
   let l:qflist = getqflist()
   let l:line = line('.')
   for l:item in l:qflist
-    if l:line == l:item['lnum']
-      if !empty(l:item['text'])
-        if bufnr('%') == l:item['bufnr']
-          let g:error = printf("Error: %s", l:item['text'])
-          call WideMsg(g:error)
+    if l:line == l:item.lnum
+      if !empty(l:item.text)
+        if bufnr('%') == l:item.bufnr
+          call WideMsg(l:item.text)
         endif
       endif
     else
@@ -115,9 +110,9 @@ function! s:SetPythonErrorMessage()
   endfor
 endfunction
 
-" Sometimes it is too much unnecessary information
-" which is not related to the context of the errors.
-" This function filter clean stacktrack
+" Sometimes Python issues debugging messages
+" which don't belong to a call stack context
+" this function filters these messages
 function! s:FixQflist() " {{{
   let l:traceback = []
   let l:qflist = getqflist()
