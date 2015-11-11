@@ -13,21 +13,15 @@ if exists(":CompilerSet") != 2		" older Vim always used :setlocal
   command -nargs=* CompilerSet setlocal <args>
 endif
 
-if !exists('$PYTHONWARNINGS')
-  let $PYTHONWARNINGS="ignore"
-endif
-
-if !exists('$PYTHONPATH')
-  let $PYTHONPATH=$PWD
-endif
-
 augroup python
   au!
-  au CursorMoved * call s:SetPythonErrorMessage()
+  " Show error message under cursor
+  " for visual and insert mode
+  au CursorMoved,CursorMovedI <buffer> call s:SetPythonErrorMessage()
+
   au QuickFixCmdPost * call s:FixQflist()
 
   au BufEnter * call s:HighlightPythonError()
-  au QuickFixCmdPost * call s:HighlightPythonError()
 augroup end
 
 " For Flake8 first
@@ -76,8 +70,9 @@ else
   CompilerSet makeprg=python
 endif
 
-function! s:HighlightPythonError()
-  highlight link PythonError SpellBad
+" Highlight lines that had errors
+function! s:HighlightPythonError() abort
+  highlight link PyError SpellBad
 
   let l:qflist = getqflist()
   let l:matches = getmatches()
@@ -89,14 +84,17 @@ function! s:HighlightPythonError()
 
   for l:item in l:qflist
     if bufnr('%') == item.bufnr
-      call matchadd("PythonError", '\w\%' . l:item.lnum . 'l\n\@!')
+      call matchadd("PyError", '\w\%' . l:item.lnum . 'l\n\@!')
     endif
   endfor
 endfunction
 
-function! s:SetPythonErrorMessage()
+" Set and show error messages for lines
+" in which they were found
+function! s:SetPythonErrorMessage() abort
   let l:qflist = getqflist()
   let l:line = line('.')
+
   for l:item in l:qflist
     if l:line == l:item.lnum
       if !empty(l:item.text)
@@ -113,14 +111,16 @@ endfunction
 " Sometimes Python issues debugging messages
 " which don't belong to a call stack context
 " this function filters these messages
-function! s:FixQflist() " {{{
+function! s:FixQflist() abort " {{{
   let l:traceback = []
   let l:qflist = getqflist()
-  for i in l:qflist
-    if !empty(i['type'])
-      call add(l:traceback, i)
+
+  for l:item in l:qflist
+    if !empty(l:item.type)
+      call add(l:traceback, l:item)
     endif
   endfor
+
   if !empty(l:traceback)
     call setqflist(l:traceback)
   endif
