@@ -17,7 +17,7 @@ augroup python
   au!
   " Show error message under cursor
   " for visual and insert mode
-  au CursorMoved,CursorMovedI <buffer> call s:SetPythonErrorMessage()
+  au CursorHold <buffer> call s:SetPythonErrorMessage()
 
   au QuickFixCmdPost * call s:FixQflist()
 
