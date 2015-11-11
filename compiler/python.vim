@@ -78,8 +78,10 @@ function! s:HighlightPythonError() abort
   let l:matches = getmatches()
 
   "clear all already highlighted
-  for l:matchId in l:matches
-    call matchdelete(l:matchId['id'])
+  for l:match in l:matches
+    if l:match.group == "PyError"
+      call matchdelete(l:match.id)
+    endif
   endfor
 
   for l:item in l:qflist
