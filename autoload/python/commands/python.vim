@@ -8,3 +8,4 @@ function! python#commands#python#run(bang, args)
 
   " Restore old makeprg
   let &makeprg = l:_makeprg
+endfunction
