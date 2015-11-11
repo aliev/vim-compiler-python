@@ -21,7 +21,7 @@ augroup python
 
   au QuickFixCmdPost * call s:FixQflist()
 
-  au BufEnter * call s:HighlightPythonError()
+  au BufEnter,QuickFixCmdPost * call s:HighlightPythonError()
 augroup end
 
 " For Flake8 first
