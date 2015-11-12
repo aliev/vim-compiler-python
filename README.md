@@ -2,19 +2,21 @@
 
 Ignore Python warnings (very useful for vim-htmldjango_omnicomplete plugin)
 
-let $PYTHONWARNINGS="ignore"
+``let $PYTHONWARNINGS="ignore"``
 
-Set PYTHONPATH as current working directory
+Set ``PYTHONPATH`` as current working directory
 
-let $PYTHONPATH=$PWD
+``let $PYTHONPATH=$PWD``
 
-Detect virtualenv
+Auto detect virtualenv
 
-$VIRTUAL_ENV
+``$VIRTUAL_ENV``
 
 # Python Compiler
 
 Can detect and highlight Python errors, show Python exceptions and errors in QuickFix.
+
+
 
 # Autoimport and Folding for imports
 
