@@ -13,15 +13,27 @@ if exists(":CompilerSet") != 2		" older Vim always used :setlocal
   command -nargs=* CompilerSet setlocal <args>
 endif
 
+if !exists('g:python_compiler_highlight_errors')
+  let g:python_compiler_highlight_errors = 0
+endif
+
+if !exists('g:python_fixqflist')
+  let g:python_compiler_fixqflist = 1
+endif
+
 augroup python
   au!
   " Show error message under cursor
   " for visual and insert mode
-  au CursorHold <buffer> call s:SetPythonErrorMessage()
+  if !empty(g:python_compiler_highlight_errors)
+    au CursorMoved <buffer> call s:SetPythonErrorMessage()
+    au BufEnter,QuickFixCmdPost * call s:HighlightPythonError()
+  endif
 
-  au QuickFixCmdPost * call s:FixQflist()
+  if !empty(g:python_compiler_fixqflist)
+    au QuickFixCmdPost * call s:FixQflist()
+  endif
 
-  au BufEnter,QuickFixCmdPost * call s:HighlightPythonError()
 augroup end
 
 " For Flake8 first
