@@ -10,9 +10,13 @@ augroup python
   au!
   " Show error message under cursor
   " for visual and insert mode
-  au CursorMoved * call python#utils#set_python_error()
-  au BufEnter,QuickFixCmdPost * call python#utils#highlight_python_error()
+  if !empty(g:python_compiler_highlight_errors)
+    au CursorMoved * call python#utils#set_python_error()
+    au BufEnter,QuickFixCmdPost * call python#utils#highlight_python_error()
+  endif
 
-  au QuickFixCmdPost * call python#utils#fix_qflist()
+  if !empty(g:python_fixqflist)
+    au QuickFixCmdPost * call python#utils#fix_qflist()
+  endif
 
 augroup end
