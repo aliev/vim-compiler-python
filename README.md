@@ -68,7 +68,3 @@ Compiler options:
 Can detect and highlight Python errors, show Python exceptions and errors in QuickFix.
 
 ![](https://raw.githubusercontent.com/aliev/vim-python/master/screen.png?raw=true)
-
-# Autoimport and Folding for imports
-
-Auto folds imports and plugin can auto place import statement
