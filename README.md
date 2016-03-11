@@ -13,35 +13,7 @@ endif
 Plug 'aliev/vim-python'
 ```
 
-[vim-dispatch](https://github.com/tpope/vim-dispatch) will allow to you run the external commands asynchronously, without exiting from Vim. As we know running external commands blocks vim. As the backend for vim-dispatch, I recommend using tmux. If you're using neovim, you don't need tmux.
-
-### Django Support
-
-By this module you can run any Django commands from your vim. Don't forget to set up your $DJANGO_SETTINGS_MODULE environment variable.
-
-``:Django runserver``
-
-or
-
-``:Django <tab>``
-
-``:Django! <tab>``
-
-to see list of Django commands.
-
-Run tests:
-
-``:Django test``
-
-Asynchronously
-
-``Django! test``
-
-If you're using nosetests, you can run tests for current opened file
-
-``Django test %``
-
-if during the test there will be errors, will automatically open the quickfix with Python stacktrace
+[vim-dispatch](https://github.com/tpope/vim-dispatch) will allow run the external commands asynchronously, without exiting from Vim. As we know running external commands blocks vim. As the backend for vim-dispatch, I recommend using tmux. If you're using neovim, you don't need tmux.
 
 # Env options
 
@@ -57,14 +29,12 @@ Auto detect virtualenv
 
 ``$VIRTUAL_ENV``
 
+Auto detect django settings
+
+``DJANGO_SETTINGS_MODULE``
+
 # Python Compiler
 
 Compiler options:
 
 ``let g:python_compiler_fixqflist = 1``
-
-``let g:python_compiler_highlight_errors = 0``
-
-Can detect and highlight Python errors, show Python exceptions and errors in QuickFix.
-
-![](https://raw.githubusercontent.com/aliev/vim-python/master/screen.png?raw=true)
