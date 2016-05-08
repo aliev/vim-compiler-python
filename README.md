@@ -21,17 +21,9 @@ Ignore Python warnings (very useful for vim-htmldjango_omnicomplete plugin)
 
 ``let $PYTHONWARNINGS="ignore"``
 
-Set ``PYTHONPATH`` as current working directory
-
-``let $PYTHONPATH=$PWD``
-
 Auto detect virtualenv
 
 ``$VIRTUAL_ENV``
-
-Auto detect django settings
-
-``DJANGO_SETTINGS_MODULE``
 
 # Python Compiler
 
