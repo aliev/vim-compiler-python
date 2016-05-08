@@ -13,6 +13,11 @@ if exists(":CompilerSet") != 2		" older Vim always used :setlocal
   command -nargs=* CompilerSet setlocal <args>
 endif
 
+" Disable Python warnings
+if !exists('$PYTHONWARNINGS')
+  let $PYTHONWARNINGS="ignore"
+endif
+
 " For Flake8 first
 CompilerSet efm  =%E%f:%l:\ could\ not\ compile,
 CompilerSet efm +=%-Z%p^,

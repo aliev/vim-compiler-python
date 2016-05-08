@@ -1,8 +1,3 @@
-" Disable Python warnings
-if !exists('$PYTHONWARNINGS')
-  let $PYTHONWARNINGS="ignore"
-endif
-
 if has('python')
 py << EOF
 import os
