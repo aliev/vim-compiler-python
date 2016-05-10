@@ -21,10 +21,6 @@ Ignore Python warnings (very useful for vim-htmldjango_omnicomplete plugin)
 
 ``let $PYTHONWARNINGS="ignore"``
 
-Auto detect virtualenv
-
-``$VIRTUAL_ENV``
-
 # Python Compiler
 
 Compiler options:
